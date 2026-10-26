@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-hand: "Caveat", "Segoe Script", cursive;
+  --font-figtree: "Inter";
+  --font-hand-fallback: "Caveat";
+  --color-sa-cream: #f7f2e8;
+  --color-sa-night: #0b1c2b;
+}
+
+html[data-intro="skip"] #sa-intro {
+  display: none;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: #f7f2e8;
+  color: #102a3f;
+}
+
+::selection {
+  background-color: #e2703a;
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
