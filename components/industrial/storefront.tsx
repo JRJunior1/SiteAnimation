@@ -33,7 +33,7 @@ export function Storefront({ live, onReplay }: StorefrontProps) {
     <div className={`if-store${live ? " is-live" : ""}`}>
       <header className="if-ed-head">
         <div className="if-ed-logo">
-          FORGE<span>+</span>FIELD
+          CLOTHES<span style={{ color: "#FF5722" }}> THAT WORK</span>
           <small>Industrial workwear</small>
         </div>
         <p className="if-ed-head__meta">SYSTEM 06 / LONDON</p>
@@ -102,12 +102,12 @@ export function Storefront({ live, onReplay }: StorefrontProps) {
             “The best protective gear disappears into the work. You only notice it
             when it holds.”
           </p>
-          <p className="if-ed-note__source">Field notes / 06 — FORGE+FIELD</p>
+          <p className="if-ed-note__source">Field notes / 06 — CLOTHES THAT WORK</p>
         </section>
       </main>
 
       <footer className="if-ed-foot">
-        <span>© {new Date().getFullYear()} FORGE+FIELD</span>
+        <span>© {new Date().getFullYear()} CLOTHES THAT WORK</span>
         <span>Built for the line. Tested to return.</span>
         <button type="button" onClick={onReplay}>
           Replay animation <span aria-hidden="true">↺</span>

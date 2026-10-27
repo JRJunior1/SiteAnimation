@@ -1,12 +1,5 @@
-import BlogStories from "@/components/blog-stories";
-import { Hero } from "@/components/hero";
-import { posts } from "@/lib/posts";
+import IndustrialExperience from "@/components/industrial/industrial-experience";
 
 export default function HomePage() {
-  return (
-    <main>
-      <Hero />
-      <BlogStories posts={posts} />
-    </main>
-  );
+  return <IndustrialExperience />;
 }

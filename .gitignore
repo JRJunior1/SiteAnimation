@@ -25,3 +25,22 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# SeedAfrique original site (moved separately)
+seedafrique_backup/
+app/about/
+app/blog/
+app/contacts/
+app/educationaltravels/
+app/gallery/
+app/joinus/
+app/upcomingevents/
+components/hero.tsx
+components/blog-stories.tsx
+components/site-chrome.tsx
+components/intro.tsx
+lib/posts.ts
+lib/site.ts
+app/page.tsx.backup
+app/layout.tsx.backup
+

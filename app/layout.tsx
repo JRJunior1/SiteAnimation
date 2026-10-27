@@ -3,9 +3,9 @@ import "./globals.css";
 import { SiteChrome } from "@/components/site-chrome";
 
 export const metadata: Metadata = {
-  title: "SEEDAfrique — Notes from the field",
+  title: "CLOTHES THAT WORK",
   description:
-    "Stories, events, and programmes from SEEDAfrique: STEM education for young Africans.",
+    "Industrial workwear — engineered for the line.",
 };
 
 export default function RootLayout({
@@ -26,7 +26,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-sa-cream font-sans text-sa-ink antialiased">
-        <SiteChrome>{children}</SiteChrome>
+        {children}
       </body>
     </html>
   );
