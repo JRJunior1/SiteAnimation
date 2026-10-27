@@ -45,7 +45,7 @@ export function Storefront({ live, onReplay }: StorefrontProps) {
       <main>
         <section className="if-ed-hero">
           <p className="if-rise if-ed-kicker" style={{ "--if-delay": "60ms" } as CSSProperties}>
-            Workwear, drawn from the line
+            Workwear, built to last
           </p>
 
           <h1 className="if-rise" style={{ "--if-delay": "140ms" } as CSSProperties}>
@@ -59,8 +59,8 @@ export function Storefront({ live, onReplay }: StorefrontProps) {
             style={{ "--if-delay": "260ms" } as CSSProperties}
           >
             <p>
-              Six industrial modules, one sealed kit. Blueprinted, field-tested and
-              built to return — boot to helmet, sole to shell.
+              Three core modules, one complete system. Built for durability,
+              protection and performance on the job.
             </p>
             <dl>
               <div>
@@ -82,7 +82,7 @@ export function Storefront({ live, onReplay }: StorefrontProps) {
         <section className="if-ed-index">
           <div className="if-ed-index__head">
             <p>01 — 03 / The kit</p>
-            <h2>Engineered in sequence.</h2>
+            <h2>Engineered to perform.</h2>
           </div>
 
           <div className="if-ed-modules">
@@ -99,8 +99,7 @@ export function Storefront({ live, onReplay }: StorefrontProps) {
 
         <section className="if-ed-note">
           <p className="if-ed-note__quote">
-            “The best protective gear disappears into the work. You only notice it
-            when it holds.”
+            “The best workwear disappears into the job. You only notice it when it holds.”
           </p>
           <p className="if-ed-note__source">Field notes / 06 — CLOTHES THAT WORK</p>
         </section>
@@ -108,7 +107,7 @@ export function Storefront({ live, onReplay }: StorefrontProps) {
 
       <footer className="if-ed-foot">
         <span>© {new Date().getFullYear()} CLOTHES THAT WORK</span>
-        <span>Built for the line. Tested to return.</span>
+        <span>Built for the line. Tested to perform.</span>
         <button type="button" onClick={onReplay}>
           Replay animation <span aria-hidden="true">↺</span>
         </button>
