@@ -70,6 +70,7 @@ export default function IndustrialIntro({ onReveal, onComplete }: IndustrialIntr
       let done = false;
       let started = false;
       let wiping = false;
+      let wipeTween: gsap.core.Tween | null = null;
 
       const reveal = () => {
         callbacksRef.current.onReveal();
@@ -82,9 +83,23 @@ export default function IndustrialIntro({ onReveal, onComplete }: IndustrialIntr
         document.documentElement.classList.remove("if-intro-active");
       };
 
+      const clearWipe = () => {
+        root.style.removeProperty("mask-image");
+        root.style.removeProperty("-webkit-mask-image");
+        root.style.removeProperty("mask-repeat");
+        root.style.removeProperty("-webkit-mask-repeat");
+        root.style.removeProperty("mask-size");
+        root.style.removeProperty("-webkit-mask-size");
+        root.style.removeProperty("will-change");
+      };
+
       const complete = () => {
         if (done) return;
         done = true;
+        wipeTween?.kill();
+        wipeTween = null;
+        root.style.visibility = "hidden";
+        clearWipe();
         cleanup();
         callbacksRef.current.onComplete();
         setHidden(true);
@@ -99,16 +114,6 @@ export default function IndustrialIntro({ onReveal, onComplete }: IndustrialIntr
         wiping = true;
         reveal();
 
-        if (typeof root.animate !== "function") {
-          gsap.to(root, {
-            autoAlpha: 0,
-            duration: 0.45,
-            ease: "power2.out",
-            onComplete: complete,
-          });
-          return;
-        }
-
         const cx = root.clientWidth / 2;
         const cy = root.clientHeight / 2;
         const maxRadius =
@@ -117,27 +122,30 @@ export default function IndustrialIntro({ onReveal, onComplete }: IndustrialIntr
             Math.max(cy, root.clientHeight - cy),
           ) + 2;
 
-        root.style.willChange = "clip-path";
-        root.style.clipPath = `circle(0px at ${cx}px ${cy}px)`;
+        root.style.setProperty("mask-repeat", "no-repeat");
+        root.style.setProperty("-webkit-mask-repeat", "no-repeat");
+        root.style.setProperty("mask-size", "100% 100%");
+        root.style.setProperty("-webkit-mask-size", "100% 100%");
+        root.style.setProperty("will-change", "mask-image");
 
-        const animation = root.animate(
-          [
-            { clipPath: `circle(0px at ${cx}px ${cy}px)` },
-            { clipPath: `circle(${maxRadius}px at ${cx}px ${cy}px)` },
-          ],
-          {
-            duration: 800,
-            easing: "cubic-bezier(0.65, 0, 0.2, 1)",
-            fill: "forwards",
-          },
-        );
+        const wipe = { radius: 0 };
+        const paintMask = () => {
+          const mask = `radial-gradient(circle at ${cx}px ${cy}px, transparent ${wipe.radius}px, #000 ${wipe.radius + 2}px)`;
+          root.style.setProperty("mask-image", mask);
+          root.style.setProperty("-webkit-mask-image", mask);
+        };
 
-        animation.finished
-          .then(() => {
-            animation.cancel();
+        paintMask();
+        wipeTween = gsap.to(wipe, {
+          radius: maxRadius,
+          duration: 0.8,
+          ease: "power3.inOut",
+          onUpdate: paintMask,
+          onComplete: () => {
+            wipeTween = null;
             complete();
-          })
-          .catch(() => complete());
+          },
+        });
       };
 
       // Skip is quick, but it still dissolves the canvas over the storefront.
