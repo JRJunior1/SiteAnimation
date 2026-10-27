@@ -23,6 +23,8 @@ export type IndustrialRenderer = {
   render: () => void;
   resize: () => void;
   destroy: () => void;
+  /** Screen position of the plotter dot, including the current camera zoom. */
+  getDotPosition: () => { x: number; y: number };
 };
 
 const TAU = Math.PI * 2;
@@ -360,7 +362,12 @@ export const createIndustrialRenderer = (
 ): IndustrialRenderer => {
   const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) {
-    return { render: () => {}, resize: () => {}, destroy: () => {} };
+    return {
+      render: () => {},
+      resize: () => {},
+      destroy: () => {},
+      getDotPosition: () => ({ x: 0, y: 0 }),
+    };
   }
 
   let width = 1;
@@ -452,6 +459,26 @@ export const createIndustrialRenderer = (
   return {
     render,
     resize,
+    getDotPosition: () => {
+      const unit = Math.min(width, height) / 100;
+      const scene: SceneContext = {
+        ctx,
+        state,
+        w: width,
+        h: height,
+        unit,
+        now: performance.now() / 1000,
+        clock,
+      };
+      const point = dotPoint(scene);
+      // Match the camera transform used in `render`, minus the random shake
+      // (which has fully settled by the time the outro wipe begins).
+      const zoom = Math.max(0.2, state.zoom);
+      return {
+        x: width / 2 + (point.x - width / 2) * zoom,
+        y: height / 2 + (point.y - height / 2) * zoom,
+      };
+    },
     destroy: () => {
       alive = false;
       window.removeEventListener("resize", onResize);

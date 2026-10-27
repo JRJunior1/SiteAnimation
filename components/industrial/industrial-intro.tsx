@@ -114,8 +114,11 @@ export default function IndustrialIntro({ onReveal, onComplete }: IndustrialIntr
         wiping = true;
         reveal();
 
-        const cx = root.clientWidth / 2;
-        const cy = root.clientHeight / 2;
+        // The wipe is born from the plotter dot itself, wherever the final
+        // camera frame left it, so the outro reads as one continuous move.
+        const dot = rendererRef.current?.getDotPosition();
+        const cx = dot ? dot.x : root.clientWidth / 2;
+        const cy = dot ? dot.y : root.clientHeight / 2;
         const maxRadius =
           Math.hypot(
             Math.max(cx, root.clientWidth - cx),
