@@ -238,7 +238,7 @@ export const createIndustrialRenderer = (
   canvas: HTMLCanvasElement,
   state: IndustrialState,
 ): IndustrialRenderer => {
-  const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+  const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) {
     return { render: () => {}, resize: () => {}, destroy: () => {} };
   }

@@ -156,7 +156,7 @@ export default function Intro() {
 
     const overlay = overlayRef.current;
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
+    const ctx = canvas?.getContext("2d", { alpha: false });
     if (!overlay || !canvas || !ctx) return;
 
     rootEl.dataset.intro = "play";
@@ -217,17 +217,42 @@ export default function Intro() {
     let W = 0;
     let H = 0;
     let unit = 0;
+    let resizeFrame = 0;
 
-    const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      W = window.innerWidth;
-      H = window.innerHeight;
+    const applySize = () => {
+      const nextDpr = Math.min(window.devicePixelRatio || 1, 2);
+      const nextW = Math.max(1, Math.round(window.innerWidth));
+      const nextH = Math.max(1, Math.round(window.innerHeight));
+
+      if (nextDpr === dpr && nextW === W && nextH === H) return;
+
+      const coarse = window.matchMedia("(pointer: coarse)").matches;
+      if (
+        coarse &&
+        nextDpr === dpr &&
+        nextW === W &&
+        Math.abs(nextH - H) < 96
+      ) {
+        return;
+      }
+
+      dpr = nextDpr;
+      W = nextW;
+      H = nextH;
       unit = Math.min(W, H) / 100;
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
     };
 
-    resize();
+    const resize = () => {
+      if (resizeFrame) return;
+      resizeFrame = window.requestAnimationFrame(() => {
+        resizeFrame = 0;
+        applySize();
+      });
+    };
+
+    applySize();
     window.addEventListener("resize", resize);
 
     const rootStyles = getComputedStyle(rootEl);
@@ -1024,63 +1049,17 @@ export default function Intro() {
 
     exit
       .to(chromeRef.current, { opacity: 0, duration: 0.25 }, 0)
-      .call(
-        () => {
-          if (!stage) return;
-          const accra = spherePoint(CITIES[0].lat, CITIES[0].lon);
-
-          Object.assign(stage.style, {
-            position: "relative",
-            zIndex: "300",
-            background: "var(--color-sa-cream)",
-            transformOrigin: `${accra.x}px ${accra.y}px`,
-            transform: "scale(1.18)",
-            clipPath: `circle(0px at ${accra.x}px ${accra.y}px)`,
-            willChange: "clip-path, transform",
-          });
-        },
-        [],
-        0,
-      )
       .to(state, { zoom: 0.86, duration: 0.24, ease: "power2.out" }, 0)
       .to(state, { zoom: 9, duration: 0.95, ease: "expo.in" }, 0.24)
+      .to(overlay, { opacity: 0, duration: 0.95, ease: "power2.in" }, 0.42)
       .call(
         () => {
-          if (!stage) return Promise.resolve();
-
-          const accra = spherePoint(CITIES[0].lat, CITIES[0].lon);
-          const maxRadius =
-            Math.hypot(
-              Math.max(accra.x, W - accra.x),
-              Math.max(accra.y, H - accra.y),
-            ) + 2;
-          const origin = `at ${accra.x}px ${accra.y}px`;
-
-          const reveal = stage.animate(
-            [
-              { clipPath: `circle(0px ${origin})`, transform: "scale(1.18)" },
-              {
-                clipPath: `circle(${maxRadius}px ${origin})`,
-                transform: "scale(1)",
-              },
-            ],
-            {
-              duration: 950,
-              easing: "cubic-bezier(0.7, 0, 0.2, 1)",
-              fill: "forwards",
-            },
-          );
-
-          return reveal.finished.then(() => {
-            overlay.style.display = "none";
-            gsap.ticker.remove(render);
-            reveal.cancel();
-            stage.removeAttribute("style");
-            hide();
-          });
+          overlay.style.display = "none";
+          gsap.ticker.remove(render);
+          hide();
         },
         [],
-        0.42,
+        1.37,
       );
 
     const finish = () => {
@@ -1186,10 +1165,9 @@ export default function Intro() {
       intro.kill();
       exit.kill();
       clearTimeout(failsafe);
+      if (resizeFrame) window.cancelAnimationFrame(resizeFrame);
       window.removeEventListener("resize", resize);
       window.removeEventListener("keydown", onKeyDown);
-      stage?.getAnimations().forEach((animation) => animation.cancel());
-      stage?.removeAttribute("style");
       delete rootEl.dataset.intro;
     };
   }, [replayKey, router]);
@@ -1201,7 +1179,7 @@ export default function Intro() {
       ref={overlayRef}
       id="sa-intro"
       aria-label="Loading SEEDAfrique"
-      className="fixed inset-0 z-[200] bg-sa-night text-white"
+      className="fixed inset-0 z-[200] touch-none overscroll-none bg-sa-night text-white"
     >
       <canvas
         ref={canvasRef}
