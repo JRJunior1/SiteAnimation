@@ -11,50 +11,60 @@ export type IndustrialState = {
   grid: number;
   /** Master timeline progress, 0 → 1. Drives the DOM progress bar. */
   progress: number;
+  /** Gates the specimen stage after the opening dot + lanes. */
+  stageIn: number;
+
+  /**
+   * Carousel position across the four specimens (0 = boot, 3 = helmet).
+   * Fractional values crossfade two specimens in place as the next one plots.
+   */
+  focus: number;
+
+  /* Opening dot + lane scene. */
+  dot: number;
+  pulse: number;
+  ring: number;
+  lanes: number;
+  speed: number;
+  flat: number;
+
+  /* Transition energy. */
+  shake: number;
+
+  /** Camera zoom used for the final dive into the last specimen. */
+  zoom: number;
 
   /** One oversized statement — 0 → 1 sweeps across the stage. */
   wordPhrase: number;
 
-  /* Specimen 01 — boot */
-  bootAlpha: number;
+  /* Specimen plot progress. */
   bootSketch: number;
-
-  /* Specimen 02 — shell */
-  suitAlpha: number;
-  suit: number;
-
-  /* Specimen 03 — load rig */
-  rigAlpha: number;
-  rig: number;
-
-  /* Specimen 04 — gloves */
-  glovesAlpha: number;
+  reflector: number;
   gloves: number;
-
-  /* Specimen 05 — helmet */
-  helmetAlpha: number;
   helmet: number;
 };
 
 export const initialIndustrialState = (): IndustrialState => ({
   grid: 0,
   progress: 0,
+  stageIn: 0,
+  focus: 0,
+
+  dot: 0,
+  pulse: 0,
+  ring: 0,
+  lanes: 0,
+  speed: 0,
+  flat: 0,
+
+  shake: 0,
+  zoom: 1,
 
   wordPhrase: 0,
 
-  bootAlpha: 0,
   bootSketch: 0,
-
-  suitAlpha: 0,
-  suit: 0,
-
-  rigAlpha: 0,
-  rig: 0,
-
-  glovesAlpha: 0,
+  reflector: 0,
   gloves: 0,
-
-  helmetAlpha: 0,
   helmet: 0,
 });
 

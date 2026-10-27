@@ -1,7 +1,7 @@
-import { PALETTE, SANS, clamp, type SceneContext } from "./types";
+import { PALETTE, SANS, clamp, lerp, type SceneContext } from "./types";
 
 /* -------------------------------------------------------------------------- */
-/*  The quiet stage: a faint plotting grid and one oversized statement.        */
+/*  The quiet stage: a faint plotting grid, lane bloom and kinetic words.      */
 /* -------------------------------------------------------------------------- */
 
 /**
@@ -51,6 +51,94 @@ export const buildGrid = (w: number, h: number, dpr: number) => {
   return canvas;
 };
 
+/* -------------------------------------------------------------------------- */
+/*  Lane bloom                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Nine lanes bloom out of the vanishing point, stream at speed, then flatten
+ * onto the floor of the stage. This is the same opening move as the SEEDAfrique
+ * intro — it is what turns a dark rectangle into a space with a floor.
+ */
+export const drawLanes = (scene: SceneContext) => {
+  const { ctx, state, w, h, unit } = scene;
+  const grow = clamp(state.lanes);
+  if (grow <= 0.001) return;
+
+  const top = { x: w / 2, y: 0.36 * h };
+  const baseline = 0.78 * h;
+  const spacing = 0.19 * Math.max(w, 1.2 * h);
+  const flat = clamp(state.flat);
+
+  // Let the lanes keep drawing after the flatten, but pull them right back so
+  // the nine overlapping strokes settle into one quiet horizon line.
+  const lineAlpha = (1 - 0.86 * flat) * grow;
+  const phase = (scene.clock * (0.25 + state.speed * 1.35)) % 1;
+
+  ctx.save();
+  ctx.lineCap = "round";
+
+  for (let i = 0; i < 9; i++) {
+    const laneX = w / 2 + (i - 4) * spacing;
+    const start = {
+      x: lerp(top.x, 0, flat),
+      y: lerp(top.y, baseline, flat),
+    };
+    const end = {
+      x: lerp(laneX, w, flat),
+      y: lerp(1.05 * h, baseline, flat),
+    };
+    const tip = {
+      x: lerp(start.x, end.x, grow),
+      y: lerp(start.y, end.y, grow),
+    };
+    const edge = i === 0 || i === 8;
+
+    ctx.globalAlpha = lineAlpha * (edge ? 0.5 : 0.24);
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 0.16 * unit;
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(tip.x, tip.y);
+    ctx.stroke();
+
+    // Comet streaks inside the lanes while they are still spread.
+    if (flat < 0.999 && i < 8) {
+      const innerLaneX = w / 2 + (i + 0.5 - 4) * spacing;
+
+      for (let k = 0; k < 8; k++) {
+        const head = Math.pow((phase + k / 8) % 1, 2.2);
+        const tail = Math.min(
+          1,
+          head + 0.08 * (0.2 + head) * (0.4 + 0.6 * state.speed),
+        );
+        if (tail > grow) continue;
+
+        ctx.globalAlpha =
+          lineAlpha * (1 - flat) * (1 - head) * (edge ? 0.5 : 0.7);
+        ctx.strokeStyle = i % 3 === 1 ? PALETTE.orange : "rgba(226,232,240,0.85)";
+        ctx.lineWidth = unit * (0.08 + 0.5 * head);
+        ctx.beginPath();
+        ctx.moveTo(
+          lerp(top.x, innerLaneX, head),
+          lerp(top.y, 1.05 * h, head),
+        );
+        ctx.lineTo(
+          lerp(top.x, innerLaneX, tail),
+          lerp(top.y, 1.05 * h, tail),
+        );
+        ctx.stroke();
+      }
+    }
+  }
+
+  ctx.restore();
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Stage statement                                                            */
+/* -------------------------------------------------------------------------- */
+
 const PHRASE_WIDE = ["PRECISION MEETS", "COMFORT,"];
 const PHRASE_NARROW = ["PRECISION", "MEETS", "COMFORT,"];
 
@@ -58,7 +146,7 @@ const PHRASE_NARROW = ["PRECISION", "MEETS", "COMFORT,"];
  * The statement is drawn as one block. On wide screens it breaks over two
  * oversized lines; on narrow screens it stacks into three so the type stays
  * large without clipping. The block sweeps horizontally like the SEEDAfrique
- * chapter words: in from the right, a long hold, then off the left edge.
+ * chapter words: in from the right, a brief hold, then off the left edge.
  */
 const drawPhrase = (scene: SceneContext, alpha: number) => {
   const { ctx, w, h } = scene;
@@ -123,7 +211,7 @@ const drawPhrase = (scene: SceneContext, alpha: number) => {
   ctx.restore();
 };
 
-/** One statement holds behind the whole specimen sequence. */
+/** The opening statement clears before the specimen sequence starts. */
 export const drawWords = (scene: SceneContext) => {
   drawPhrase(scene, scene.state.wordPhrase);
 };

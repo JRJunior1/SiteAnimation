@@ -61,15 +61,19 @@ skips the SEEDAfrique chrome on this route. The storefront is always mounted
 underneath the canvas; the intro dissolves to it at the end.
 
 The intro draws everything into one high-DPI canvas from a single GSAP-driven state
-object (no DOM for moving intro elements). One specimen holds the stage at a time:
+object (no DOM for moving intro elements). Four specimens share one carousel, and
+each hands off to the next with an in-place crossfade:
 
-1. **Footing** — a safety boot sketches itself on, then clears.
-2. **Shell** — a ripstop work jacket draws on over the grid.
-3. **Rig** — a fall-arrest harness with a wide load belt sketches on.
+1. **Statement** — “Precision meets comfort,” sweeps in and clears before the first
+   specimen starts.
+2. **Footing** — a safety boot sketches itself at center stage.
+3. **Reflector** — a high-visibility work shirt with reflective body and sleeve
+   bands plots over the grid.
 4. **Extremities** — a single work glove plots itself, then clears.
-5. **Head** — a hard-hat blueprint with a short chin strap closes the sequence.
-6. **Statement** — “Precision meets comfort,” holds behind the gear, then sweeps
-   off as the helmet clears and the storefront fades in.
+5. **Head** — a hard-hat blueprint closes the sequence.
+
+The intro runs the same ~6.35s pre-exit beat as the SEEDAfrique intro, then the
+same circular reveal hands off to the storefront.
 
 Key files:
 
@@ -79,7 +83,7 @@ Key files:
 | React intro + GSAP timeline | `components/industrial/industrial-intro.tsx` |
 | Live storefront + replay | `components/industrial/storefront.tsx`, `components/industrial/industrial-experience.tsx` |
 | Canvas render loop | `lib/industrial/scene.ts` |
-| Specimen modules | `lib/industrial/foundation.ts`, `fabric.ts`, `rigging.ts`, `gloves-blueprint.ts`, `helmet-blueprint.ts`, `extremities.ts`, `headgear.ts` |
+| Specimen modules | `lib/industrial/foundation.ts`, `reflector.ts`, `gloves-blueprint.ts`, `helmet-blueprint.ts`, `extremities.ts`, `headgear.ts` |
 | Stage grid + statement | `lib/industrial/stage.ts` |
 | HUD / palette / shared types | `lib/industrial/hud.ts`, `lib/industrial/types.ts` |
 

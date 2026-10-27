@@ -1,8 +1,8 @@
-import { clamp, type SceneContext } from "./types";
+import type { SceneContext } from "./types";
 import { BOOT_BOUNDS, drawBoot } from "./boot-blueprint";
 
 /* -------------------------------------------------------------------------- */
-/*  Specimen 01 — a site boot plots itself, holds, then clears the stage.      */
+/*  Specimen 01 — a site boot plots itself at the centre of the stage.         */
 /* -------------------------------------------------------------------------- */
 
 const BOOT_W = BOOT_BOUNDS.maxX - BOOT_BOUNDS.minX;
@@ -15,18 +15,12 @@ const bootFit = (w: number, h: number) =>
 
 export const drawFoundation = (scene: SceneContext) => {
   const { ctx, state, w, h } = scene;
-  const alpha = clamp(state.bootAlpha);
-  if (alpha <= 0.001) return;
+  if (state.bootSketch <= 0.001) return;
 
   const fit = bootFit(w, h);
-  const rise = (1 - alpha) * 26;
 
   ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.translate(
-    w / 2 - BOOT_MID_X * fit,
-    h * 0.5 - BOOT_MID_Y * fit + rise,
-  );
+  ctx.translate(w / 2 - BOOT_MID_X * fit, h * 0.5 - BOOT_MID_Y * fit);
   ctx.scale(fit, fit);
   drawBoot(ctx, state.bootSketch);
   ctx.restore();

@@ -1,4 +1,4 @@
-import { clamp, type SceneContext } from "./types";
+import type { SceneContext } from "./types";
 import { drawHelmet } from "./helmet-blueprint";
 
 /* -------------------------------------------------------------------------- */
@@ -16,15 +16,12 @@ const helmetFit = (w: number, h: number) =>
 
 export const drawHelmetLayer = (scene: SceneContext) => {
   const { ctx, state, w, h } = scene;
-  const alpha = clamp(state.helmetAlpha);
-  if (alpha <= 0.001) return;
+  if (state.helmet <= 0.001) return;
 
   const fit = helmetFit(w, h);
-  const rise = (1 - alpha) * 24;
 
   ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.translate(w / 2, h * 0.5 + rise);
+  ctx.translate(w / 2, h * 0.5);
   ctx.scale(fit, fit);
   ctx.translate(-HELMET_MID_X, -HELMET_MID_Y);
   drawHelmet(ctx, state.helmet);

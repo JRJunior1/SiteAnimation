@@ -69,6 +69,7 @@ export default function IndustrialIntro({ onReveal, onComplete }: IndustrialIntr
 
       let done = false;
       let started = false;
+      let wiping = false;
 
       const reveal = () => {
         callbacksRef.current.onReveal();
@@ -89,9 +90,64 @@ export default function IndustrialIntro({ onReveal, onComplete }: IndustrialIntr
         setHidden(true);
       };
 
-      // Skip is quick but still dissolves the canvas over the storefront.
+      /**
+       * The finale mirrors the SEEDAfrique exit: the last frame dives forward,
+       * then a circular clip wipe opens the storefront underneath.
+       */
+      const startWipe = () => {
+        if (done || wiping) return;
+        wiping = true;
+        reveal();
+
+        if (typeof root.animate !== "function") {
+          gsap.to(root, {
+            autoAlpha: 0,
+            duration: 0.45,
+            ease: "power2.out",
+            onComplete: complete,
+          });
+          return;
+        }
+
+        const cx = root.clientWidth / 2;
+        const cy = root.clientHeight / 2;
+        const maxRadius =
+          Math.hypot(
+            Math.max(cx, root.clientWidth - cx),
+            Math.max(cy, root.clientHeight - cy),
+          ) + 2;
+
+        root.style.willChange = "clip-path";
+        root.style.clipPath = `circle(0px at ${cx}px ${cy}px)`;
+
+        const animation = root.animate(
+          [
+            { clipPath: `circle(0px at ${cx}px ${cy}px)` },
+            { clipPath: `circle(${maxRadius}px at ${cx}px ${cy}px)` },
+          ],
+          {
+            duration: 800,
+            easing: "cubic-bezier(0.65, 0, 0.2, 1)",
+            fill: "forwards",
+          },
+        );
+
+        animation.finished
+          .then(() => {
+            animation.cancel();
+            complete();
+          })
+          .catch(() => complete());
+      };
+
+      // Skip is quick, but it still dissolves the canvas over the storefront.
       const skip = () => {
         if (done) return;
+        if (wiping) {
+          complete();
+          return;
+        }
+
         reveal();
         timelineRef.current?.pause();
         gsap.to(root, {
@@ -106,45 +162,82 @@ export default function IndustrialIntro({ onReveal, onComplete }: IndustrialIntr
 
       const tl = gsap.timeline({
         paused: true,
-        onComplete: complete,
       });
       timelineRef.current = tl;
 
       /* ---------------------------- master clock ---------------------------- */
-      tl.to(state, { progress: 1, duration: 16.35, ease: "none" }, 0)
-        .to(state, { grid: 1, duration: 0.9, ease: "power2.out" }, 0.05)
+      tl.to(state, { progress: 1, duration: 6.95, ease: "none" }, 0)
+        .to(state, { grid: 1, duration: 0.85, ease: "power2.out" }, 1.15)
 
-        /* --------------------------- stage statement ------------------------ */
-        .to(state, { wordPhrase: 0.32, duration: 2.4, ease: "power2.out" }, 0.1)
-        .to(state, { wordPhrase: 0.65, duration: 11.3, ease: "none" }, 2.5)
-        .to(state, { wordPhrase: 1, duration: 2.2, ease: "power2.in" }, 13.8)
+        /* -------------------------- opening dot ----------------------------- */
+        .to(state, { dot: 1.55, duration: 0.5, ease: "back.out(3)" }, 0.1)
+        .to(
+          state,
+          { pulse: 1, duration: 0.11, yoyo: true, repeat: 3, ease: "sine.inOut" },
+          0.5,
+        )
+        .fromTo(
+          state,
+          { ring: 0 },
+          { ring: 1, duration: 0.72, ease: "expo.out" },
+          0.54,
+        )
+        .to(state, { lanes: 1, duration: 0.5, ease: "expo.out" }, 0.78)
+        .to(state, { speed: 1.6, duration: 0.5, ease: "power2.in" }, 0.78)
+        .to(state, { speed: 0, duration: 0.34, ease: "power2.out" }, 1.45)
+        .to(state, { flat: 1, duration: 0.5, ease: "expo.inOut" }, 1.28)
 
-        /* -------------------------- 01 / footing ---------------------------- */
-        .to(state, { bootAlpha: 1, duration: 0.75, ease: "power2.out" }, 0.35)
-        .to(state, { bootSketch: 1, duration: 1.9, ease: "power1.inOut" }, 0.55)
-        .to(state, { bootAlpha: 0, duration: 0.5, ease: "power2.in" }, 3.0)
+        /* --------------------------- statement ------------------------------ */
+        .to(state, { wordPhrase: 0.32, duration: 0.3, ease: "power2.out" }, 0.85)
+        .to(state, { wordPhrase: 0.78, duration: 0.3, ease: "none" }, 1.15)
+        .to(state, { wordPhrase: 1, duration: 0.4, ease: "power2.in" }, 1.45)
 
-        /* --------------------------- 02 / shell ----------------------------- */
-        .to(state, { suitAlpha: 1, duration: 0.7, ease: "power2.out" }, 3.65)
-        .to(state, { suit: 1, duration: 1.9, ease: "power1.inOut" }, 3.8)
-        .to(state, { suitAlpha: 0, duration: 0.5, ease: "power2.in" }, 6.45)
+        /* --------------------------- 01 / footing --------------------------- */
+        .to(state, { stageIn: 1, duration: 0.35, ease: "power2.out" }, 1.9)
+        .to(state, { bootSketch: 1, duration: 0.8, ease: "power1.inOut" }, 1.95)
 
-        /* ---------------------------- 03 / rig ------------------------------ */
-        .to(state, { rigAlpha: 1, duration: 0.6, ease: "power2.out" }, 7.1)
-        .to(state, { rig: 1, duration: 1.7, ease: "power1.inOut" }, 7.25)
-        .to(state, { rigAlpha: 0, duration: 0.5, ease: "power2.in" }, 9.55)
+        /* --------------------------- morph 01 → 02 -------------------------- */
+        .to(state, { focus: 1, duration: 0.48, ease: "power2.inOut" }, 2.7)
+        .fromTo(
+          state,
+          { shake: 0.5 },
+          { shake: 0, duration: 0.34, ease: "power2.out" },
+          2.74,
+        )
 
-        /* --------------------------- 04 / gloves ---------------------------- */
-        .to(state, { glovesAlpha: 1, duration: 0.65, ease: "power2.out" }, 10.15)
-        .to(state, { gloves: 1, duration: 1.75, ease: "power1.inOut" }, 10.3)
-        .to(state, { glovesAlpha: 0, duration: 0.5, ease: "power2.in" }, 12.6)
+        /* ------------------------ 02 / reflector shirt ---------------------- */
+        .to(state, { reflector: 1, duration: 1.2, ease: "power1.inOut" }, 2.78)
 
-        /* --------------------------- 05 / helmet ---------------------------- */
-        .to(state, { helmetAlpha: 1, duration: 0.65, ease: "power2.out" }, 13.15)
-        .to(state, { helmet: 1, duration: 1.6, ease: "power1.inOut" }, 13.3)
-        .call(reveal, [], 15.7)
-        .to(state, { helmetAlpha: 0, duration: 0.5, ease: "power2.in" }, 15.35)
-        .to(root, { autoAlpha: 0, duration: 0.5, ease: "power2.out" }, 15.85);
+        /* --------------------------- morph 02 → 03 -------------------------- */
+        .to(state, { focus: 2, duration: 0.48, ease: "power2.inOut" }, 3.92)
+        .fromTo(
+          state,
+          { shake: 0.46 },
+          { shake: 0, duration: 0.32, ease: "power2.out" },
+          3.96,
+        )
+
+        /* --------------------------- 03 / gloves ---------------------------- */
+        .to(state, { gloves: 1, duration: 0.8, ease: "power1.inOut" }, 3.98)
+
+        /* --------------------------- morph 03 → 04 -------------------------- */
+        .to(state, { focus: 3, duration: 0.48, ease: "power2.inOut" }, 4.72)
+        .fromTo(
+          state,
+          { shake: 0.46 },
+          { shake: 0, duration: 0.32, ease: "power2.out" },
+          4.76,
+        )
+
+        /* --------------------------- 04 / helmet ---------------------------- */
+        .to(state, { helmet: 1, duration: 1.15, ease: "power1.inOut" }, 4.8)
+
+        /* ----------------------------- finale ------------------------------- */
+        // SEEDAfrique runs 6.35s into its exit wipe; this lands on the same
+        // total playback time.
+        .call(reveal, [], 6.2)
+        .to(state, { zoom: 6.5, duration: 0.72, ease: "expo.in" }, 6.2)
+        .call(startWipe, [], 6.35);
 
       // Start once Inter 900 and the skip label are ready, with a short
       // failsafe so a blocked font request never traps the visitor.

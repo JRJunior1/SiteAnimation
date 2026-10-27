@@ -15,15 +15,12 @@ const gloveFit = (w: number, h: number) =>
 
 export const drawExtremities = (scene: SceneContext) => {
   const { ctx, state, w, h } = scene;
-  const alpha = clamp(state.glovesAlpha);
-  if (alpha <= 0.001) return;
+  if (state.gloves <= 0.001) return;
 
   const fit = gloveFit(w, h);
-  const rise = (1 - alpha) * 24;
 
   ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.translate(w / 2 - GLOVE_MID_X * fit, h * 0.5 - GLOVE_MID_Y * fit + rise);
+  ctx.translate(w / 2 - GLOVE_MID_X * fit, h * 0.5 - GLOVE_MID_Y * fit);
   ctx.scale(fit, fit);
   drawGloves(ctx, clamp(state.gloves));
   ctx.restore();
