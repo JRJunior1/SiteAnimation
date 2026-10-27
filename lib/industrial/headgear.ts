@@ -14,6 +14,16 @@ const HELMET_MID_Y = -20;
 const helmetFit = (w: number, h: number) =>
   Math.min((w - 40) / HELMET_W, (h - 170) / HELMET_H, 2);
 
+export const helmetLead = (scene: SceneContext) => {
+  const fit = helmetFit(scene.w, scene.h);
+
+  return {
+    x: scene.w / 2 + (-138 - HELMET_MID_X) * fit,
+    y: scene.h * 0.5 + (18 - HELMET_MID_Y) * fit,
+    angle: Math.atan2(-44, -6),
+  };
+};
+
 export const drawHelmetLayer = (scene: SceneContext) => {
   const { ctx, state, w, h } = scene;
   if (state.helmet <= 0.001) return;

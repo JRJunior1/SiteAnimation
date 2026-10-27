@@ -495,6 +495,16 @@ const SHIRT_MID_Y = -10;
 const shirtFit = (w: number, h: number) =>
   Math.min((w - 72) / SHIRT_W, (h - 128) / SHIRT_H, 1.4);
 
+export const reflectorLead = (scene: SceneContext) => {
+  const fit = shirtFit(scene.w, scene.h);
+
+  return {
+    x: scene.w / 2 - 44 * fit,
+    y: scene.h * 0.5 - SHIRT_MID_Y * fit - 286 * fit,
+    angle: Math.atan2(22, -64),
+  };
+};
+
 export const drawReflector = (scene: SceneContext) => {
   const { ctx, state, w, h } = scene;
   if (state.reflector <= 0.001) return;

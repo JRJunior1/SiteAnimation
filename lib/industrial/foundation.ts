@@ -13,6 +13,16 @@ const BOOT_MID_Y = (BOOT_BOUNDS.minY + BOOT_BOUNDS.maxY) / 2;
 const bootFit = (w: number, h: number) =>
   Math.min((w - 56) / BOOT_W, (h - 150) / BOOT_H, 1.6);
 
+export const bootLead = (scene: SceneContext) => {
+  const fit = bootFit(scene.w, scene.h);
+
+  return {
+    x: scene.w / 2 + (-216 - BOOT_MID_X) * fit,
+    y: scene.h * 0.5 + (-46 - BOOT_MID_Y) * fit,
+    angle: Math.atan2(8, 58),
+  };
+};
+
 export const drawFoundation = (scene: SceneContext) => {
   const { ctx, state, w, h } = scene;
   if (state.bootSketch <= 0.001) return;

@@ -13,6 +13,16 @@ const GLOVE_MID_Y = (GLOVES_BOUNDS.minY + GLOVES_BOUNDS.maxY) / 2;
 const gloveFit = (w: number, h: number) =>
   Math.min((w - 64) / GLOVE_W, (h - 190) / GLOVE_H, 1.55);
 
+export const gloveLead = (scene: SceneContext) => {
+  const fit = gloveFit(scene.w, scene.h);
+
+  return {
+    x: scene.w / 2 + (-82 - GLOVE_MID_X) * fit,
+    y: scene.h * 0.5 + (62 - GLOVE_MID_Y) * fit,
+    angle: Math.atan2(30, -10),
+  };
+};
+
 export const drawExtremities = (scene: SceneContext) => {
   const { ctx, state, w, h } = scene;
   if (state.gloves <= 0.001) return;

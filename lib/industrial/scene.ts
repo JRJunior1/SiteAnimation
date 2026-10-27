@@ -6,10 +6,10 @@ import {
   type SceneContext,
 } from "./types";
 import { buildGrid, drawLanes, drawWords } from "./stage";
-import { drawFoundation } from "./foundation";
-import { drawReflector } from "./reflector";
-import { drawExtremities } from "./extremities";
-import { drawHelmetLayer } from "./headgear";
+import { bootLead, drawFoundation } from "./foundation";
+import { drawReflector, reflectorLead } from "./reflector";
+import { drawExtremities, gloveLead } from "./extremities";
+import { drawHelmetLayer, helmetLead } from "./headgear";
 
 /* -------------------------------------------------------------------------- */
 /*  The single canvas render loop.                                            */
@@ -76,22 +76,70 @@ const plotterPoint = (scene: SceneContext, index: number, progress: number) => {
   };
 };
 
+const leadAt = (scene: SceneContext, index: number) => {
+  switch (clamp(Math.round(index), 0, SPECIMEN_COUNT - 1)) {
+    case 0:
+      return bootLead(scene);
+    case 1:
+      return reflectorLead(scene);
+    case 2:
+      return gloveLead(scene);
+    default:
+      return helmetLead(scene);
+  }
+};
+
+const handoffPoint = (
+  scene: SceneContext,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  t: number,
+) => {
+  const dx = to.x - from.x;
+  const c1x = from.x + dx * 0.26;
+  const c1y = from.y - scene.h * 0.16;
+  const c2x = from.x + dx * 0.74;
+  const c2y = to.y - scene.h * 0.1;
+  const u = 1 - t;
+  const uu = u * u;
+  const tt = t * t;
+
+  return {
+    x: uu * u * from.x + 3 * uu * t * c1x + 3 * u * tt * c2x + tt * t * to.x,
+    y: uu * u * from.y + 3 * uu * t * c1y + 3 * u * tt * c2y + tt * t * to.y,
+  };
+};
+
 const dotPoint = (scene: SceneContext, trail = 0) => {
   const { state } = scene;
   const focus = clamp(state.focus, 0, SPECIMEN_COUNT - 1);
   const base = Math.floor(focus);
   const next = Math.min(base + 1, SPECIMEN_COUNT - 1);
   const frac = focus - base;
+  const baseSketch = sketchAt(state, base);
+  const nextSketch = sketchAt(state, next);
 
-  const from = plotterPoint(scene, base, sketchAt(state, base) - trail);
-  const to = plotterPoint(scene, next, sketchAt(state, next) - trail);
-  const t = smooth(frac);
+  let x: number;
+  let y: number;
 
-  let x = lerp(from.x, to.x, t);
-  let y = lerp(from.y, to.y, t);
+  if (frac > 0.001) {
+    const from = plotterPoint(scene, base, baseSketch - trail);
+    const anchor = leadAt(scene, next);
+    const flight = smooth(frac / 0.18);
+    const handoff = handoffPoint(scene, from, anchor, flight);
+    const orbit = plotterPoint(scene, next, nextSketch - trail);
+    const launch = smooth(clamp((nextSketch - trail) / 0.5));
 
-  // The hand-off lifts over the stage like a thrown arc instead of sliding.
-  if (frac > 0) y -= Math.sin(Math.PI * t) * scene.h * 0.055;
+    x = lerp(handoff.x, orbit.x, launch);
+    y = lerp(handoff.y, orbit.y, launch);
+  } else {
+    const anchor = leadAt(scene, base);
+    const orbit = plotterPoint(scene, base, baseSketch - trail);
+    const launch = smooth(clamp((baseSketch - trail) / 0.5));
+
+    x = lerp(anchor.x, orbit.x, launch);
+    y = lerp(anchor.y, orbit.y, launch);
+  }
 
   // Blend out of the opening position above the lane floor.
   const bob =
@@ -172,6 +220,78 @@ const drawPlotter = (scene: SceneContext) => {
 
   const position = dotPoint(scene);
   const radius = state.dot * unit * (0.82 + 0.24 * state.pulse);
+
+  const focus = clamp(state.focus, 0, SPECIMEN_COUNT - 1);
+  const base = Math.floor(focus);
+  const next = Math.min(base + 1, SPECIMEN_COUNT - 1);
+  const frac = focus - base;
+  const morphing = frac > 0.001 && frac < 0.999;
+  const leadIndex = morphing ? next : Math.round(focus);
+  const lead = leadAt(scene, leadIndex);
+  const leadSketch = sketchAt(state, leadIndex);
+  const wake = smooth(state.flat) * state.stageIn;
+  const halo = wake * (1 - smooth(clamp(leadSketch / 0.45)));
+  const tether = morphing ? wake * (1 - smooth(frac / 0.22)) : 0;
+
+  if (halo > 0.01) {
+    const pulse = unit * (1.5 + 0.45 * Math.sin(scene.clock * 4.6));
+
+    ctx.save();
+    ctx.translate(lead.x, lead.y);
+    ctx.rotate(lead.angle);
+    ctx.globalAlpha = halo * 0.72;
+    ctx.strokeStyle = PALETTE.orange;
+    ctx.lineWidth = Math.max(1, unit * 0.11);
+    ctx.beginPath();
+    ctx.arc(0, 0, pulse, 0, TAU);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-unit * 4.6, 0);
+    ctx.lineTo(-pulse * 1.8, 0);
+    ctx.moveTo(pulse * 1.8, 0);
+    ctx.lineTo(unit * 4.6, 0);
+    ctx.moveTo(0, -unit * 4.6);
+    ctx.lineTo(0, -pulse * 1.8);
+    ctx.moveTo(0, pulse * 1.8);
+    ctx.lineTo(0, unit * 4.6);
+    ctx.stroke();
+    ctx.setLineDash([unit * 0.55, unit * 0.9]);
+    ctx.globalAlpha = halo * 0.42;
+    ctx.beginPath();
+    ctx.moveTo(pulse * 1.7, 0);
+    ctx.lineTo(unit * 8, 0);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  if (leadSketch > 0 && leadSketch < 0.32) {
+    const contact = 1 - smooth(leadSketch / 0.32);
+
+    ctx.save();
+    ctx.globalAlpha = contact * 0.45;
+    ctx.strokeStyle = PALETTE.cyan;
+    ctx.lineWidth = Math.max(1, unit * 0.09);
+    ctx.beginPath();
+    ctx.arc(lead.x, lead.y, unit * (2 + leadSketch * 42), 0, TAU);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  if (tether > 0.01) {
+    const midX = (position.x + lead.x) / 2;
+    const midY = (position.y + lead.y) / 2 - h * 0.035;
+
+    ctx.save();
+    ctx.globalAlpha = tether * 0.5;
+    ctx.strokeStyle = PALETTE.orange;
+    ctx.lineWidth = Math.max(1, unit * 0.1);
+    ctx.setLineDash([unit * 0.9, unit * 0.75]);
+    ctx.beginPath();
+    ctx.moveTo(position.x, position.y);
+    ctx.quadraticCurveTo(midX, midY, lead.x, lead.y);
+    ctx.stroke();
+    ctx.restore();
+  }
 
   // Contact shadow while the dot still belongs to the lane floor.
   if (state.lanes > 0 && state.flat < 0.999) {
