@@ -139,8 +139,8 @@ export const drawLanes = (scene: SceneContext) => {
 /*  Stage statement                                                            */
 /* -------------------------------------------------------------------------- */
 
-const PHRASE_WIDE = ["PRECISION MEETS", "COMFORT,"];
-const PHRASE_NARROW = ["PRECISION", "MEETS", "COMFORT,"];
+const PHRASE_WIDE = ["CLOTHES THAT", "WORK"];
+const PHRASE_NARROW = ["CLOTHES", "THAT", "WORK"];
 
 /**
  * The statement is drawn as one block. On wide screens it breaks over two

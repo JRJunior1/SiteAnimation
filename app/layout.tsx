@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SiteChrome } from "@/components/site-chrome";
+import "./industrial.css";
 
 export const metadata: Metadata = {
-  title: "CLOTHES THAT WORK",
+  title: "CLOTHES THAT WORK — Industrial workwear",
   description:
-    "Industrial workwear — engineered for the line.",
+    "Industrial workwear — precision-built gear engineered for the line.",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-sa-cream font-sans text-sa-ink antialiased">
+      <body className="antialiased">
         {children}
       </body>
     </html>

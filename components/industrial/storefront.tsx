@@ -49,9 +49,9 @@ export function Storefront({ live, onReplay }: StorefrontProps) {
           </p>
 
           <h1 className="if-rise" style={{ "--if-delay": "140ms" } as CSSProperties}>
-            <span>Built for the</span>
+            <span>Clothes</span>
             <br />
-            <em>work,</em>
+            <em>that work.</em>
           </h1>
 
           <div
