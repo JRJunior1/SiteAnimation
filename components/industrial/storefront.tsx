@@ -33,7 +33,7 @@ export function Storefront({ live, onReplay }: StorefrontProps) {
     <div className={`if-store${live ? " is-live" : ""}`}>
       <header className="if-ed-head">
         <div className="if-ed-logo">
-          CLOTHES<span style={{ color: "#FF5722" }}> THAT WORK</span>
+          <div>CLOTHES <span style={{ color: "#FF5722" }}>THAT WORK</span></div>
           <small>Industrial workwear</small>
         </div>
         <p className="if-ed-head__meta">SYSTEM 06 / LONDON</p>
